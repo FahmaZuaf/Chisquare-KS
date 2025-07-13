@@ -4,14 +4,17 @@
 \alias{ks_test}
 \title{Uji Kolmogorov-Smirnov untuk Data Kontinu}
 \usage{
-ks_test(data, dist = "normal", params = NULL)
+ks_test(data, dist = "normal", params = NULL, auto_scale = FALSE)
 }
 \arguments{
 \item{data}{Vector numerik. Data hasil pengamatan yang akan diuji.}
 
-\item{dist}{Karakter. Nama distribusi teoretik: "normal", "exponential", "gamma", atau "beta".}
+\item{dist}{Karakter. Nama distribusi teoretik, salah satu dari:
+`"normal"`, `"exponential"`, `"gamma"`, `"beta"`.}
 
-\item{params}{List parameter distribusi. Jika NULL, akan dihitung otomatis dari data.}
+\item{params}{List berisi parameter distribusi teoretik. Jika `NULL`, akan diestimasi dari data.}
+
+\item{auto_scale}{Logical. Jika `TRUE` dan distribusi adalah "beta", data di luar (0,1) akan diskalakan otomatis.}
 }
 \value{
 Objek hasil dari fungsi \code{ks.test}.
@@ -21,10 +24,13 @@ Fungsi ini melakukan uji Kolmogorov-Smirnov untuk menguji apakah data berasal
 dari distribusi kontinu teoretik tertentu (normal, eksponensial, gamma, atau beta).
 }
 \examples{
-x <- simulate_data(100, "beta", list(2, 5))
-ks_test(x, "beta")  # estimasi otomatis shape1 dan shape2
+x <- rnorm(100)
+ks_test(x, "normal")
 
-x <- simulate_data(100, "normal", list(0, 1))
-ks_test(x)  # default: normal
+y <- runif(100)
+ks_test(y, "beta")  # Tidak perlu penskalaan
+
+z <- rnorm(100, mean = 5, sd = 2)
+ks_test(z, "beta", auto_scale = TRUE)  # Otomatis diskalakan ke (0,1)
 
 }
