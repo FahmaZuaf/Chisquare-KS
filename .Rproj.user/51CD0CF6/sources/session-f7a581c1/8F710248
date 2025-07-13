@@ -3,7 +3,7 @@
     "path": "D:/Tugas Kuliah Semester 4/Komputasi Statistika (2 SKS)/kelompok10/tests/testthat/test-chi_square_test.R",
     "project_path": "tests/testthat/test-chi_square_test.R",
     "type": "r_source",
-    "hash": "0",
+    "hash": "847784479",
     "contents": "",
     "dirty": false,
     "created": 1752394588391.0,
@@ -12,15 +12,15 @@
     "properties": {
         "source_window_id": "",
         "Source": "Source",
-        "cursorPosition": "34,0",
-        "scrollLine": "13"
+        "cursorPosition": "23,0",
+        "scrollLine": "2"
     },
     "folds": "",
-    "lastKnownWriteTime": 1752394606,
+    "lastKnownWriteTime": 1752397711,
     "encoding": "UTF-8",
     "collab_server": "",
     "source_window": "",
-    "last_content_update": 1752394606614,
+    "last_content_update": 1752397711918,
     "read_only": false,
     "read_only_alternatives": []
 }

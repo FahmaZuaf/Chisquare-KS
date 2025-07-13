@@ -1,3 +1,0 @@
-library(kelompok10)
-data = simulate_data(100, "normal",list(0,1))
-ks_test(data,"normal")
