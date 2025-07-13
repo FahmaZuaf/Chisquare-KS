@@ -41,8 +41,12 @@ ks_test <- function(data, dist = "normal", params = NULL, auto_scale = FALSE) {
     return(ks.test(data, "pgamma", shape = shape, rate = rate))
 
   } else if (dist == "beta") {
+<<<<<<< HEAD
     # Validasi dan penskalaan otomatis jika perlu
     if (any(data <= 0 | data >= 1)) {
+=======
+     if (any(data <= 0 | data >= 1)) {
+>>>>>>> 536a5468b85308539920bec94553be003738adfe
       if (auto_scale) {
         warning("Data beta di luar (0,1). Data akan diskalakan otomatis ke rentang (0,1).")
         data <- (data - min(data)) / (max(data) - min(data))
