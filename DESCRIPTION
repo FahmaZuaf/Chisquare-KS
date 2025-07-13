@@ -1,0 +1,16 @@
+Package: kelompok10
+Type: Package
+Title: Goodness-of-Fit Tests for Simulated Data
+Version: 0.1.0
+Author: Kelompok 10 (Sri Wahyuni, Fahma Zuaf Zarir, Arya Dirga Alfiqhri,Larasati Oktarani)
+Maintainer: Kelompok 10 <fahmazuafzarir14@gmail.com>
+Description: Package to perform chi-square and Kolmogorov-Smirnov tests on simulated data.
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    stats
+RoxygenNote: 7.3.2
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3

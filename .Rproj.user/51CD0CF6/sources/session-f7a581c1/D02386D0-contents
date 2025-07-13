@@ -1,0 +1,16 @@
+test_that("chi_square_test untuk semua distribusi diskrit", {
+  bern <- simulate_data(200, "bernoulli", list(0.5))
+  expect_s3_class(chi_square_test(bern), "htest")
+
+  binom <- simulate_data(200, "binomial", list(2, 0.5))
+  probs <- dbinom(0:2, size = 2, prob = 0.5)
+  expect_s3_class(chi_square_test(binom, probs), "htest")
+
+  pois <- simulate_data(200, "poisson", list(3))
+  pois <- pois[pois <= 10] # batasi kategori agar uji stabil
+  expect_s3_class(chi_square_test(pois), "htest")
+
+  geom <- simulate_data(200, "geometric", list(0.3))
+  geom <- geom[geom <= 10] # batasi juga
+  expect_s3_class(chi_square_test(geom), "htest")
+})
