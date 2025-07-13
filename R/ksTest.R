@@ -36,10 +36,18 @@ ks_test <- function(data, dist = "normal", params = NULL) {
     return(ks.test(data, "pgamma", shape = shape, rate = rate))
 
   } else if (dist == "beta") {
+     if (any(data <= 0 | data >= 1)) {
+      if (auto_scale) {
+        warning("Data beta di luar (0,1). Data akan diskalakan otomatis ke rentang (0,1).")
+        data <- (data - min(data)) / (max(data) - min(data))
+      } else {
+        stop("Data beta harus berada dalam (0,1). Aktifkan 'auto_scale = TRUE' untuk penskalaan otomatis.")
+      }
+    }
+
     if (is.null(params$shape1) || is.null(params$shape2)) {
       m <- mean(data)
       v <- var(data)
-      if (m <= 0 || m >= 1) stop("Data beta harus berada dalam (0,1)")
       temp <- m * (1 - m) / v - 1
       shape1 <- m * temp
       shape2 <- (1 - m) * temp
@@ -47,9 +55,10 @@ ks_test <- function(data, dist = "normal", params = NULL) {
       shape1 <- params$shape1
       shape2 <- params$shape2
     }
+
     return(ks.test(data, "pbeta", shape1 = shape1, shape2 = shape2))
 
   } else {
-    stop("Distribusi tidak valid.")
+    stop("Distribusi tidak valid. Gunakan salah satu dari: 'normal', 'exponential', 'gamma', atau 'beta'.")
   }
 }
