@@ -14,9 +14,11 @@ Package ini dikembangkan untuk keperluan pembelajaran Komputasi Statistika.
 
 ```
 # Install devtools jika belum
-install.packages("devtools")
+install.packages(c("devtools","usethis"))
 
-# Install package
+# Using library
+library(usethis)
+library(devtools)
 devtools::install_github("FahmaZuaf/Chisquare-KS")
 ```
 
