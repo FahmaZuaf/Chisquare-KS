@@ -100,4 +100,5 @@ Lisensi: GPL-3
 
 Kelompok 10
 (Sri Wahyuni, Fahma Zuaf Zarir, Arya Dirga Alfiqhri, Larasati Oktarani)
+
 Maintainer: fahmazuafzarir14@gmail.com
