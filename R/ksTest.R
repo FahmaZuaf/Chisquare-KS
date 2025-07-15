@@ -1,70 +1,95 @@
-#' Uji Kolmogorov-Smirnov untuk Data Kontinu
+#' Uji Kolmogorov-Smirnov Manual
 #'
-#' Fungsi ini melakukan uji Kolmogorov-Smirnov untuk menguji apakah data berasal
-#' dari distribusi kontinu teoretik tertentu (normal, eksponensial, gamma, atau beta).
+#' Melakukan uji KS satu sampel secara manual terhadap distribusi teoretik (normal, eksponensial, dll).
 #'
-#' @param data Vector numerik. Data hasil pengamatan yang akan diuji.
-#' @param dist Karakter. Nama distribusi teoretik, salah satu dari:
-#' `"normal"`, `"exponential"`, `"gamma"`, `"beta"`.
-#' @param params List berisi parameter distribusi teoretik. Jika `NULL`, akan diestimasi dari data.
-#' @param auto_scale Logical. Jika `TRUE` dan distribusi adalah "beta", data di luar (0,1) akan diskalakan otomatis.
+#' @param data Data numerik vektor.
+#' @param dist Karakter nama distribusi teoretik: "norm", "exp", "gamma", atau "beta".
+#' @param params List parameter distribusi. Misalnya, list(mean = 0, sd = 1) untuk normal.
 #'
-#' @return Objek hasil dari fungsi \code{ks.test}.
-#'
-#' @examples
-#' x <- rnorm(100)
-#' ks_test(x, "normal")
-#'
-#' y <- runif(100)
-#' ks_test(y, "beta")  # Tidak perlu penskalaan
-#'
-#' z <- rnorm(100, mean = 5, sd = 2)
-#' ks_test(z, "beta", auto_scale = TRUE)  # Otomatis diskalakan ke (0,1)
-#'
+#' @return Objek kelas 'htest' berisi D, Dplus, Dminus, dan p-value (aproksimasi dan exact).
 #' @importFrom stats ks.test pnorm pexp pgamma pbeta sd var
 #' @export
-ks_test <- function(data, dist = "normal", params = NULL, auto_scale = FALSE) {
-  if (!is.list(params) && !is.null(params)) params <- list(params)
+#'
+#' @examples
+#' x <- rnorm(30)
+#' ks_test(x, "norm", list(mean = 0, sd = 1))
+ks_test <- function(data, dist = "norm", params = NULL) {
+  n <- length(data)
+  data_sorted <- sort(data)
 
-  if (dist == "normal") {
-    mean_val <- if (!is.null(params$mean)) params$mean else mean(data)
-    sd_val   <- if (!is.null(params$sd))   params$sd   else sd(data)
-    return(ks.test(data, "pnorm", mean = mean_val, sd = sd_val))
+  # Normalisasi nama distribusi
+  dist <- tolower(dist)
+  dist <- switch(dist,
+                 normal = "norm",
+                 exponential = "exp",
+                 dist)
 
-  } else if (dist == "exponential") {
-    rate_val <- if (!is.null(params$rate)) params$rate else 1 / mean(data)
-    return(ks.test(data, "pexp", rate = rate_val))
-
-  } else if (dist == "gamma") {
-    shape <- if (!is.null(params$shape)) params$shape else (mean(data)^2 / var(data))
-    rate  <- if (!is.null(params$rate))  params$rate  else (mean(data) / var(data))
-    return(ks.test(data, "pgamma", shape = shape, rate = rate))
-
-  } else if (dist == "beta") {
-    # Validasi dan penskalaan otomatis jika perlu
-    if (any(data <= 0 | data >= 1)) {
-      if (auto_scale) {
-        warning("Data beta di luar (0,1). Data akan diskalakan otomatis ke rentang (0,1).")
-        data <- (data - min(data)) / (max(data) - min(data))
-      } else {
-        stop("Data beta harus berada dalam (0,1). Aktifkan 'auto_scale = TRUE' untuk penskalaan otomatis.")
-      }
-    }
-
-    if (is.null(params$shape1) || is.null(params$shape2)) {
-      m <- mean(data)
-      v <- var(data)
-      temp <- m * (1 - m) / v - 1
-      shape1 <- m * temp
-      shape2 <- (1 - m) * temp
-    } else {
-      shape1 <- params$shape1
-      shape2 <- params$shape2
-    }
-
-    return(ks.test(data, "pbeta", shape1 = shape1, shape2 = shape2))
-
-  } else {
-    stop("Distribusi tidak valid. Gunakan salah satu dari: 'normal', 'exponential', 'gamma', atau 'beta'.")
+  # Estimasi default parameter jika params tidak diberikan
+  if (is.null(params)) {
+    params <- switch(
+      dist,
+      norm = list(mean = mean(data), sd = sd(data)),
+      exp = list(rate = 1 / mean(data)),
+      gamma = {
+        m <- mean(data)
+        v <- var(data)
+        list(shape = m^2 / v, rate = m / v)
+      },
+      beta = {
+        if (any(data <= 0 | data >= 1)) stop("Data beta harus dalam (0,1)")
+        m <- mean(data)
+        v <- var(data)
+        common <- m * (1 - m) / v - 1
+        list(shape1 = m * common, shape2 = (1 - m) * common)
+      },
+      stop("Distribusi tidak didukung.")
+    )
   }
+
+  # Konversi scale → rate jika ada
+  if (dist == "gamma") {
+    if (!is.null(params$scale) && is.null(params$rate)) {
+      params$rate <- 1 / params$scale
+    }
+  }
+
+  # Hitung fungsi distribusi kumulatif teoritis
+  F_theory <- switch(
+    dist,
+    norm = pnorm(data_sorted, mean = params$mean, sd = params$sd),
+    exp = pexp(data_sorted, rate = params$rate),
+    gamma = pgamma(data_sorted, shape = params$shape, rate = params$rate),
+    beta = pbeta(data_sorted, shape1 = params$shape1, shape2 = params$shape2),
+    stop("Distribusi tidak didukung.")
+  )
+
+  # CDF Empiris
+  Fn_empirical <- (1:n) / n
+  Dplus <- max(Fn_empirical - F_theory)
+  Dminus <- max(F_theory - c(0, Fn_empirical[-n]))
+  D <- max(Dplus, Dminus)
+
+  # p-value exact dari ks.test
+  ks_args <- c(list(x = data, y = paste0("p", dist)), params)
+  ks_ref <- tryCatch(do.call(ks.test, ks_args), error = function(e) NULL)
+  p_value_exact <- if (!is.null(ks_ref)) ks_ref$p.value else NA
+
+  # Aproksimasi p-value
+  ks_pval_approx <- function(D, n) {
+    lambda <- (sqrt(n) + 0.12 + 0.11 / sqrt(n)) * D
+    j <- 1:100
+    pval <- 1 - 2 * sum((-1)^(j - 1) * exp(-2 * (lambda^2) * j^2))
+    min(max(pval, 0), 1)
+  }
+  p_value_asym <- ks_pval_approx(D, n)
+
+  structure(list(
+    statistic = D,
+    Dplus = Dplus,
+    Dminus = Dminus,
+    p_value_asym = p_value_asym,
+    p_value_exact = p_value_exact,
+    method = paste("Kolmogorov-Smirnov test for", dist, "distribution"),
+    data.name = deparse(substitute(data))
+  ), class = "htest")
 }

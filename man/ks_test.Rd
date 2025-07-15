@@ -2,35 +2,24 @@
 % Please edit documentation in R/ksTest.R
 \name{ks_test}
 \alias{ks_test}
-\title{Uji Kolmogorov-Smirnov untuk Data Kontinu}
+\title{Uji Kolmogorov-Smirnov Manual}
 \usage{
-ks_test(data, dist = "normal", params = NULL, auto_scale = FALSE)
+ks_test(data, dist = "norm", params = NULL)
 }
 \arguments{
-\item{data}{Vector numerik. Data hasil pengamatan yang akan diuji.}
+\item{data}{Data numerik vektor.}
 
-\item{dist}{Karakter. Nama distribusi teoretik, salah satu dari:
-`"normal"`, `"exponential"`, `"gamma"`, `"beta"`.}
+\item{dist}{Karakter nama distribusi teoretik: "norm", "exp", "gamma", atau "beta".}
 
-\item{params}{List berisi parameter distribusi teoretik. Jika `NULL`, akan diestimasi dari data.}
-
-\item{auto_scale}{Logical. Jika `TRUE` dan distribusi adalah "beta", data di luar (0,1) akan diskalakan otomatis.}
+\item{params}{List parameter distribusi. Misalnya, list(mean = 0, sd = 1) untuk normal.}
 }
 \value{
-Objek hasil dari fungsi \code{ks.test}.
+Objek kelas 'htest' berisi D, Dplus, Dminus, dan p-value (aproksimasi dan exact).
 }
 \description{
-Fungsi ini melakukan uji Kolmogorov-Smirnov untuk menguji apakah data berasal
-dari distribusi kontinu teoretik tertentu (normal, eksponensial, gamma, atau beta).
+Melakukan uji KS satu sampel secara manual terhadap distribusi teoretik (normal, eksponensial, dll).
 }
 \examples{
-x <- rnorm(100)
-ks_test(x, "normal")
-
-y <- runif(100)
-ks_test(y, "beta")  # Tidak perlu penskalaan
-
-z <- rnorm(100, mean = 5, sd = 2)
-ks_test(z, "beta", auto_scale = TRUE)  # Otomatis diskalakan ke (0,1)
-
+x <- rnorm(30)
+ks_test(x, "norm", list(mean = 0, sd = 1))
 }
