@@ -6,7 +6,7 @@
 #' @param dist Karakter nama distribusi teoretik: "norm", "exp", "gamma", atau "beta".
 #' @param params List parameter distribusi. Misalnya, list(mean = 0, sd = 1) untuk normal.
 #'
-#' @return Objek kelas 'htest' berisi D, Dplus, Dminus, dan p-value (aproksimasi dan exact).
+#' @return List dengan nilai D, Dplus, Dminus, dan p-value (aproksimasi).
 #' @importFrom stats ks.test pnorm pexp pgamma pbeta sd var
 #' @export
 #'
@@ -16,13 +16,6 @@
 ks_test <- function(data, dist = "norm", params = NULL) {
   n <- length(data)
   data_sorted <- sort(data)
-
-  # Normalisasi nama distribusi
-  dist <- tolower(dist)
-  dist <- switch(dist,
-                 normal = "norm",
-                 exponential = "exp",
-                 dist)
 
   # Estimasi default parameter jika params tidak diberikan
   if (is.null(params)) {
@@ -46,7 +39,7 @@ ks_test <- function(data, dist = "norm", params = NULL) {
     )
   }
 
-  # Konversi scale → rate jika ada
+  # 🔧 Deteksi & konversi scale → rate (khusus gamma)
   if (dist == "gamma") {
     if (!is.null(params$scale) && is.null(params$rate)) {
       params$rate <- 1 / params$scale
@@ -71,11 +64,12 @@ ks_test <- function(data, dist = "norm", params = NULL) {
 
   # p-value exact dari ks.test
   ks_args <- c(list(x = data, y = paste0("p", dist)), params)
-  ks_ref <- tryCatch(do.call(ks.test, ks_args), error = function(e) NULL)
-  p_value_exact <- if (!is.null(ks_ref)) ks_ref$p.value else NA
+  ks_ref <- do.call(ks.test, ks_args)
+  p_value_exact <- ks_ref$p.value
 
-  # Aproksimasi p-value
+  # Aproksimasi p-value asimtotik
   ks_pval_approx <- function(D, n) {
+    if (D <= 0 || n <= 0) return(1)
     lambda <- (sqrt(n) + 0.12 + 0.11 / sqrt(n)) * D
     j <- 1:100
     pval <- 1 - 2 * sum((-1)^(j - 1) * exp(-2 * (lambda^2) * j^2))
@@ -83,13 +77,11 @@ ks_test <- function(data, dist = "norm", params = NULL) {
   }
   p_value_asym <- ks_pval_approx(D, n)
 
-  structure(list(
-    statistic = D,
+  return(list(
+    D = D,
     Dplus = Dplus,
     Dminus = Dminus,
     p_value_asym = p_value_asym,
-    p_value_exact = p_value_exact,
-    method = paste("Kolmogorov-Smirnov test for", dist, "distribution"),
-    data.name = deparse(substitute(data))
-  ), class = "htest")
+    p_value_exact = p_value_exact
+  ))
 }

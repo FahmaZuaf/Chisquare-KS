@@ -14,7 +14,7 @@ ks_test(data, dist = "norm", params = NULL)
 \item{params}{List parameter distribusi. Misalnya, list(mean = 0, sd = 1) untuk normal.}
 }
 \value{
-Objek kelas 'htest' berisi D, Dplus, Dminus, dan p-value (aproksimasi dan exact).
+List dengan nilai D, Dplus, Dminus, dan p-value (aproksimasi).
 }
 \description{
 Melakukan uji KS satu sampel secara manual terhadap distribusi teoretik (normal, eksponensial, dll).
