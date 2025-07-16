@@ -31,7 +31,7 @@ chisq_test_manual <- function(data, dist, params) {
 
   # Statistik uji
   chi_sq_stat <- sum((observed - expected)^2 / expected)
-  df <- length(observed) - 1 - length(params)
+  df <- length(observed) - 1
   p_val <- pchisq(chi_sq_stat, df, lower.tail = FALSE)
 
   list(
